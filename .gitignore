@@ -60,3 +60,13 @@ target/
 
 #Ipython Notebook
 .ipynb_checkpoints
+
+# virtualenv junk
+bin/
+local/
+include/
+lib/
+pip-selfcheck.json
+
+# emacs autosaves
+*~
