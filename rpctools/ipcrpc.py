@@ -5,7 +5,7 @@ import os
 import errno
 from .rpc_client_base import BaseRpcClient
 
-IpcAddress = str
+
 default_address = os.path.join(os.path.expanduser('~'),
                                '.ethereum', 'geth.ipc')  # default path for go-ethereum
 RECV_CHUNK = 4096 # max number of bytes to read from connection at a time.
@@ -13,8 +13,8 @@ RECV_CHUNK = 4096 # max number of bytes to read from connection at a time.
 
 class RpcClient(BaseRpcClient):
     """An RPC client class that uses go-ethereum's 'ipc' interface."""
-    def __init__(self, *, address: IpcAddress=default_address, verbose: bool=False):
-        super().__init__(verbose)
+    def __init__(self, address=default_address, verbose=False):
+        BaseRpcClient.__init__(self, verbose)
         self.connection = socket.socket(socket.AF_UNIX,
                                         socket.SOCK_STREAM)
         self.connection.connect(address)
@@ -24,7 +24,7 @@ class RpcClient(BaseRpcClient):
         self.connection.shutdown(socket.SHUT_RDWR)
         self.connection.close()
 
-    def _send(self, json: bytes) -> bytes:
+    def _send(self, json):
         """Sends the json through the UDS connection to geth."""
         self.connection.sendall(json)
         result = bytearray()
