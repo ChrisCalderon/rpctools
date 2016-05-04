@@ -9,7 +9,7 @@ default_address = ('localhost', 8545)  # the go-ethereum default address
 
 class RpcClient(BaseRpcClient):
     def __init__(self, address=default_address, verbose=False):
-        super().__init__(verbose)
+        BaseRpcClient.__init__(self, verbose)
         self.connection = httplib.HTTPConnection(*address)
 
     def close(self):

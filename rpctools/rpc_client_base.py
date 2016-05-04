@@ -7,7 +7,7 @@ class BaseRpcClient(object):
     def __init__(self, verbose):
         self.verbose = verbose
         self.tag = "{}-{{}}".format(os.urandom(8).encode('hex'))
-        self.message_count = -1
+        self.message_number = -1
         self.batch = []
 
     def _send(self, message):
@@ -18,11 +18,11 @@ class BaseRpcClient(object):
         """Sends a json message and returns the result."""
         encoded_json = ujson.encode(json)
         if self.verbose:
-            print("Sending:", encoded_json)
+            print "Sending:", encoded_json
 
         response = self._send(encoded_json.encode("utf8")).decode("utf8")
         if self.verbose:
-            print("Got:", response)
+            print "Got:", response 
 
         return ujson.decode(response)
 
@@ -39,9 +39,9 @@ class BaseRpcClient(object):
         """Creates a json message with the given method and params,
         then sends it or adds it to the current batch."""
         batch = kwds.get('batch', False)
-        self.message_count += 1
+        self.message_number += 1
         json = {"jsonrpc": "2.0",
-                "id": self.tag.format(self.message_count),
+                "id": self.tag.format(self.message_number),
                 "method": method,
                 "params": params}
 
@@ -53,7 +53,9 @@ class BaseRpcClient(object):
     def send_batch(self):
         """Sends the current rpc batch."""
         if self.batch:
-            return self.send_json_message(self.batch)
+            result = self.send_json_message(self.batch)
+            self.batch = []
+            return result
 
     def __getattr__(self, method):
         """Generates convenience functions for rpc."""

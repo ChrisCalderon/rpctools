@@ -1,8 +1,7 @@
 """This module defines an RPC client class that uses an Unix domain
 socket to communicate with the go-ethereum client."""
-import socket
+from socket import socket, AF_UNIX, SOCK_STREAM, SHUT_RDWR
 import os
-import errno
 from .rpc_client_base import BaseRpcClient
 
 
@@ -15,19 +14,18 @@ class RpcClient(BaseRpcClient):
     """An RPC client class that uses go-ethereum's 'ipc' interface."""
     def __init__(self, address=default_address, verbose=False):
         BaseRpcClient.__init__(self, verbose)
-        self.connection = socket.socket(socket.AF_UNIX,
-                                        socket.SOCK_STREAM)
+        self.connection = socket(AF_UNIX, SOCK_STREAM)
         self.connection.connect(address)
 
     def close(self):
         """Closes the connection."""
-        self.connection.shutdown(socket.SHUT_RDWR)
+        self.connection.shutdown(SHUT_RDWR)
         self.connection.close()
 
     def _send(self, json):
-        """Sends the json through the UDS connection to geth."""
+        """Sends send stringified JSONRPC messages through go-ethereum's Unix Domain socket."""
         self.connection.sendall(json)
         result = bytearray()
-        while not self.is_valid_json(result.decode("utf8")):
+        while not self.is_valid_json(result.decode('utf8')):
             result.extend(self.connection.recv(RECV_CHUNK))
-        return bytes(result)
+        return result
