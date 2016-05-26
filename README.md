@@ -20,3 +20,11 @@ rpc_client.eth_coinbase() # equivalent to rpc_client.send_rpc('eth_coinbase')
 ```
 These functions all take a variable amount of arguments, which are all added to their JSON RPC's "param" member.
 They also take the `batch` keyword argument.
+
+## Instantiation
+
+In order to use `IPCRPCClient`, you must know the path to your geth node's ipc socket. But don't worry, `IPCRPCClient` already knows about the default geth ipc socket, `~/.ethereum/geth.ipc`. If you call IPCRPCClient without any arguments, it will try to connect to the default. 
+
+`HTTPRPCClient` will do the same; if called without an argument, it will try to connect to `('localhost', 8545)` for RPC. You can specify a different address using `('host', port)`.
+
+Both classes also have a `verbose` argument, which is `False` by default. If you set it to `True`, then every JSON RPC and response will be printed out to the terminal.
