@@ -8,7 +8,7 @@ Both classes expose the exact same API, the only difference being that `HTTPRPCC
 
 * `rpc_client.send_rpc(method, *params, batch=False)`
 
-   Sends a single JSON RPC. If `batch` is `False`, the JSON RPC is sent immediately to the Ethereum node and the resulting JSON response is returned as a python `dict`. If `batch` is `True` then the JSON RPC is just added to the current batch.
+   Sends a single JSON RPC. If `batch` is `False`, the JSON RPC is sent immediately to the Ethereum node and the resulting JSON response is returned as a python `dict`. If `batch` is `True` then the JSON RPC is just added to the current batch and nothing is returned.
 
 * `rpc_client.send_batch()`
 
