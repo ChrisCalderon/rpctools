@@ -28,3 +28,7 @@ In order to use `IPCRPCClient`, you must know the path to your geth node's ipc s
 `HTTPRPCClient` will do the same; if called without an argument, it will try to connect to `('localhost', 8545)` for RPC. You can specify a different address using `('host', port)`.
 
 Both classes also have a `verbose` argument, which is `False` by default. If you set it to `True`, then every JSON RPC and response will be printed out to the terminal.
+
+## Tests
+
+Tests are found in the `tests` directory. To run the tests, you should install pytest, either to your system or a virtualenv, and then run `py.test tests` in a terminal, inside whatever folder you cloned/extracted this repo to.
