@@ -31,4 +31,4 @@ Both classes also have a `verbose` argument, which is `False` by default. If you
 
 ## Tests
 
-Tests are found in the `tests` directory. To run the tests, you should install pytest, either to your system or a virtualenv, and then run `py.test tests` in a terminal, inside whatever folder you cloned/extracted this repo to.
+Tests are found in the `tests` directory. To run the tests, you should install pytest, either to your system or a virtualenv, and then run `py.test tests` in a terminal, inside whatever folder you cloned/extracted this repo to. You will also need to have a geth node running using the default rpc host and port, with ipc enabled, and with the default `datadir`.
