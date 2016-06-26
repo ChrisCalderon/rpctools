@@ -3,26 +3,33 @@ import os
 import ujson
 
 
+class RPCClientError(Exception): pass
+
+
 class BaseRpcClient(object):
     def __init__(self, verbose):
         self.verbose = verbose
-        self.tag = "{}-{{}}".format(os.urandom(8).encode('hex'))
+        self.tag = '{}-{{}}'.format(os.urandom(8).encode('hex'))
         self.message_number = -1
         self.batch = []
 
     def _send(self, message):
         """Sends json rpc to the server."""
-        raise NotImplemented()
+        raise NotImplementedError('_send must be implemented in a subclass.')
+
+    def close(self):
+        """Closes the RPC connection."""
+        raise NotImplementedError('close must be implemented in a subclass.')
 
     def send_json_message(self, json):
         """Sends a json message and returns the result."""
         encoded_json = ujson.encode(json)
         if self.verbose:
-            print "Sending:", encoded_json
+            print 'Sending:', encoded_json
 
         response = self._send(encoded_json.encode("utf8")).decode("utf8")
         if self.verbose:
-            print "Got:", response 
+            print 'Got:', response
 
         return ujson.decode(response)
 
@@ -40,10 +47,10 @@ class BaseRpcClient(object):
         then sends it or adds it to the current batch."""
         batch = kwds.get('batch', False)
         self.message_number += 1
-        json = {"jsonrpc": "2.0",
-                "id": self.tag.format(self.message_number),
-                "method": method,
-                "params": params}
+        json = {'jsonrpc': '2.0',
+                'id': self.tag.format(self.message_number),
+                'method': method,
+                'params': params}
 
         if batch:
             self.batch.append(json)

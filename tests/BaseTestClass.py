@@ -1,6 +1,6 @@
 class BaseTest(object):
     def make_rpc_client(self):
-        raise NotImplementedError
+        raise NotImplementedError("make_rpc_client must be overridden in a subclass.")
 
     def test_is_valid_json(self):
         rpc_client = self.make_rpc_client()

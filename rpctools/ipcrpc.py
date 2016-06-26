@@ -2,7 +2,7 @@
 socket to communicate with the go-ethereum client."""
 from socket import socket, AF_UNIX, SOCK_STREAM, SHUT_RDWR
 import os
-from .rpc_client_base import BaseRpcClient
+from rpctools.rpc_client_base import BaseRpcClient
 
 
 default_address = os.path.join(os.path.expanduser('~'),
@@ -16,6 +16,7 @@ class RpcClient(BaseRpcClient):
         BaseRpcClient.__init__(self, verbose)
         self.connection = socket(AF_UNIX, SOCK_STREAM)
         self.connection.connect(address)
+        self.is_local = True
 
     def close(self):
         """Closes the connection."""
