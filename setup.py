@@ -1,7 +1,7 @@
 from setuptools import setup
 
 with open('requirements.txt') as reqs:
-    requirements = filter(lambda r: r!='',
+    requirements = filter(None,
                           map(lambda r: r.strip(),
                               reqs))
 

@@ -1,6 +1,6 @@
 from BaseTestClass import BaseTest
-from rpctools import HTTPRPCClient
+from rpctools import HttpRpcClient
 
 class TestHTTPRPC(BaseTest):
     def make_rpc_client(self):
-        return HTTPRPCClient()
+        return HttpRpcClient()

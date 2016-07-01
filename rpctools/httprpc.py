@@ -1,27 +1,24 @@
-from rpctools.rpc_client_base import BaseRpcClient
-import httplib
+"""A class for JSONRPC over HTTP or HTTPS."""
+from rpctools.jsonrpc import JSONRPC
+import requests
 
-REQUEST_HEADERS = {'User-Agent': 'dapper/1.0',
-                   'Content-Type': 'application/json',
-                   'Accept': 'application/json'}
-default_address = ('localhost', 8545)  # the go-ethereum default address
+HEADERS = {'User-Agent': 'pyrpctools',
+           'Content-Type': 'application/json',
+           'Accept': 'application/json'}
 
+class HTTPRPC(JSONRPC):
+    """Sends JSON RPC through an HTTP or HTTPS backend."""
+    def __init__(self, address, verbose):
+        """Uses an address to connect to an Ethereum node.
 
-class RpcClient(BaseRpcClient):
-    def __init__(self, address=default_address, verbose=False):
-        BaseRpcClient.__init__(self, verbose)
-        self.connection = httplib.HTTPConnection(*address)
-        if address[0] in ('localhost', '127.0.0.1'):
-            self.is_local = True
-        else:
-            self.is_local = False
-
-    def close(self):
-        self.connection.close()
+        Arguments:
+        address -- A browser-style address, like 'http://mydomain.com:port'.
+        This class can use http or https and can be used for local nodes or
+        public ones.
+        verbose -- If True, prints each message."""
+        JSONRPC.__init__(self, verbose)
+        self.address = address
 
     def _send(self, json):
-        self.connection.request('POST', '/', json,
-                                REQUEST_HEADERS)
-
-        response = self.connection.getresponse()
-        return response.read()
+        r = requests.post(url=self.address, data=json, headers=HEADERS)
+        return r.content

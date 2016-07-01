@@ -1,22 +1,22 @@
-"""This module defines an RPC client class that uses an Unix domain
-socket to communicate with the go-ethereum client."""
+"""A JSONRPC class with an IPC backend."""
 from socket import socket, AF_UNIX, SOCK_STREAM, SHUT_RDWR
-import os
-from rpctools.rpc_client_base import BaseRpcClient
+from rpctools.jsonrpc import JSONRPC, is_valid_json
 
-
-default_address = os.path.join(os.path.expanduser('~'),
-                               '.ethereum', 'geth.ipc')  # default path for go-ethereum
 RECV_CHUNK = 4096 # max number of bytes to read from connection at a time.
 
 
-class RpcClient(BaseRpcClient):
-    """An RPC client class that uses go-ethereum's 'ipc' interface."""
-    def __init__(self, address=default_address, verbose=False):
-        BaseRpcClient.__init__(self, verbose)
+class IPCRPC(JSONRPC):
+    """Sends JSON RPC over an Unix domain socket."""
+    def __init__(self, address, verbose):
+        """Create a connection for JSONRPC to `address`.
+
+        Arguments:
+        address -- The path to the Unix domain socket of an Ethereum
+        client. This is a file path, not a url!
+        verbose -- Tells whether or not to print messages."""
+        JSONRPC.__init__(self, verbose)
         self.connection = socket(AF_UNIX, SOCK_STREAM)
         self.connection.connect(address)
-        self.is_local = True
 
     def close(self):
         """Closes the connection."""
@@ -24,9 +24,9 @@ class RpcClient(BaseRpcClient):
         self.connection.close()
 
     def _send(self, json):
-        """Sends send stringified JSONRPC messages through go-ethereum's Unix Domain socket."""
+        """Sends stringified JSONRPC messages through  Unix Domain socket."""
         self.connection.sendall(json)
         result = bytearray()
-        while not self.is_valid_json(result.decode('utf8')):
+        while not is_valid_json(result.decode('utf8')):
             result.extend(self.connection.recv(RECV_CHUNK))
         return result
