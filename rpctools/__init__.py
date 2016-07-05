@@ -26,7 +26,7 @@ def rpc_factory(address, verbose):
     if not isinstance(address, str):
         raise RPCError('The address must be a string: {!r}'.format(address))
 
-    if _os.path.isfile(address) and _stat.S_ISSOCK(_os.stat(address).st_mode):
+    if _os.path.exists(address) and _stat.S_ISSOCK(_os.stat(address).st_mode):
         return IPCRPC(address, verbose)
     elif _HTTP.match(address):
         return HTTPRPC(address, verbose)

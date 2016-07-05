@@ -60,7 +60,7 @@ class JSONRPC(object):
 
         return ujson.decode(response)
 
-    def send(self, method, params, **kwds):
+    def send(self, method, *params, **kwds):
         """Creates a json message with the given method and params,
         then sends it or adds it to the current batch.
 
