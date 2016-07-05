@@ -1,8 +1,9 @@
 """A class for JSONRPC over HTTP or HTTPS."""
 from rpctools.jsonrpc import JSONRPC
+import rpctools
 import requests
 
-HEADERS = {'User-Agent': 'pyrpctools',
+HEADERS = {'User-Agent': 'rpctools/{}',
            'Content-Type': 'application/json',
            'Accept': 'application/json'}
 

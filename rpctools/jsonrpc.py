@@ -20,16 +20,12 @@ class JSONRPC(object):
 
     Attributes:
     verbose -- A bool which controls whether or not JSON messages are logged.
-    tag -- A string prefix for the id of JSON responses,  unique to each instance.
     message_number -- The number of JSON messages sent, used as a suffix for the id.
-    batch -- A list of the JSON messages in the current batch.
+    batch -- A list of JSON messages in the current batch.
 
     Methods:
-    rpc.close() -- Closes the connection to the RPC server.
-    rpc.send_json_message(msg) -- Sends the JSON message msg to the RPC server and returns the response.
-    rpc.is_valid_json(msg) -- True if msg is a valid JSON string, else False.
-    rpc.send_rpc(method, *args, **kwds) -- Creates and sends a JSON RPC message and returns the response.
-    rpc.send_batch() -- Sends the current batch of JSON RPC messages.
+    rpc.send(method, *params, **kwds) -- Creates and sends a JSON RPC message and returns the response.
+    rpc.end_batch() -- Sends the current batch of JSON RPC messages.
 
     Classes  derived from this class can also generate specialized functions for sending a particular
     JSON RPC method, on the fly. For example rpc.eth_blockNumber() will generate a function called
