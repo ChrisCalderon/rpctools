@@ -29,4 +29,4 @@ The class `EtherscanRPC` has an interface similar to the other classes, but it u
 
 ## Tests
 
-Tests are found in the `tests` directory. To run the tests, first install the requirements in `test-requirements.txt` and run `py.test tests` inside whatever folder you cloned/extracted this repo to. You will need to have an Ethereum node running with ipc and http rpc enabled, with the default locations. An internet connection is needed to run the EtherscanRPC tests.
+Tests are found in the `tests` directory. To run the tests, first install the requirements in `test-requirements.txt` and run `python -m pytest tests` (this command works with virtualenv) inside whatever folder you cloned/extracted this repo to. You will need to have an Ethereum node running with ipc and http rpc enabled, with the default locations. An internet connection is needed to run the EtherscanRPC tests.
