@@ -1,145 +1,160 @@
 """A client for the Etherscan geth proxy API."""
-import re
+from __future__ import print_function
 import requests
 from rpctools.httprpc import HEADERS
-
-HEX = re.compile('^0x[0-9a-f]+$')
-
-
-def is_hex(stuff):
-    """Predicate that returns true iff `stuff` is a hex string."""
-    return isinstance(stuff, str) and HEX.match(stuff.lower())
+from rpctools.jsonrpc import RPCError
 
 
-def is_eth_addr(stuff):
-    """Predicate that returns true iff `stuff` looks like an ethereum address."""
-    return is_hex(stuff) and len(stuff) == 42
-
-
-def check_eth_address(stuff):
-    """If `stuff` is not an Ethereum address, raises an RpcClientError."""
-    if not is_eth_addr(stuff):
-        raise EtherscanRPCError('invalid address: {}'.format(stuff))
-
-
-def is_hash(stuff):
-    """Predicate the returns true iff `stuff` looks like a 256 bit, hex encoded digest."""
-    return is_hex(stuff) and len(stuff) == 66
-
-
-def process_tag(tag):
-    """Does type checking and/or conversion to hex."""
-    if isinstance(tag, str) and tag in ('latest', 'earliest', 'pending'):
-        pass
-    elif isinstance(tag, int):
-        tag = hex(tag)
-    else:
-        raise EtherscanRPCError("invalid tag: <val {!r}>".format(tag))
-    return tag
-
-
-def process_int(n, name):
-    """Checks type and converts to hex."""
-    if not isinstance(n, (int, long)):
-        raise EtherscanRPCError("{} must be an int: {}".format(name, n))
-    return hex(n)
-
-
-class EtherscanRPCError(Exception): pass
+class EtherscanRPCError(Exception):
+    pass
 
 
 class EtherscanRPC(object):
     """An RPC client for the etherscan.io geth proxy API.
-    Where ever an RPC method expects a hex encoded int, the methods here expect
-    a normal Python int. For example, eth_getBlockByNumber(10, False) is the correct way
-    to use that method, not eth_getBlockByNumber('10', False) or eth_getBlockByNumber('0xa', False).
 
-    See the documentation at https://etherscan.io/apis#proxy
+    Notes:
+    All hex arguments should start with '0x'.
+    Several methods have a tag argument, see the Ethereum docs. [1]
+    Also, check out the Etherscan docs! [2]
+
+    [1] https://github.com/ethereum/wiki/wiki/JSON-RPC#the-default-block-parameter
+    [2] https://etherscan.io/apis#proxy
     """
+    address = 'https://api.etherscan.io/api'
+    error = {"status": "0", "message": "NOTOK", "result": "Error!"}
+    error_fmt = 'Etherscan doesn\' like your params: {}'
+
     def __init__(self, api_key, verbose):
         """Opens a connection to api.etherscan.io.
-        Argument:
-        api_key -- An API key from an Etherscan account. Not required,
-                   but the connection will be rate limited without it.
-        """
-        self.address = 'https://api.etherscan.io/api'
-        self.common_params = {'module':'proxy'}
-        self.verbose = verbose
-        if api_key:
-            self.common_params['apikey'] = api_key
 
-    def _dispatcher(self, **params):
+        Argument:
+        api_key -- An API key from an Etherscan account.
+        verbose -- Optionally print JSON messages. Useful for debugging.
+        """
+        self.common_params = {'module': 'proxy'}
+        self.verbose = verbose
+        self.common_params['apikey'] = api_key
+
+    def _dispatch(self, **params):
         # Does an RPC request for the given action and extra parameters.
         params.update(self.common_params)
         r = requests.get(url=self.address, params=params, headers=HEADERS)
         json = r.json()
+        if json == self.error:  # The Etherscan API doesn't like your request.
+            raise EtherscanRPCError(self.error_fmt.format(params))
+        if 'error' in json:
+            raise RPCError(json)
         if self.verbose:
-            print "Sent:"
-            print r.url
-            print "Response:"
-            print json
+            print("Sent:")
+            print(r.url)
+            print("Response:")
+            print(json)
         return json
 
     def eth_blockNumber(self):
-        return self._dispatcher(action='eth_blockNumber')
+        """The current block number."""
+        return self._dispatch(action='eth_blockNumber')
 
-    def eth_getBlockByNumber(self, tag, boolean=False):
-        return self._dispatcher(action='eth_getBlockByNumber',
-                                tag=process_tag(tag),
-                                boolean=str(bool(boolean)).lower())
+    def eth_getBlockByNumber(self, tag='latest', boolean=False):
+        """Gets a block from Etherscan.io
 
-    def eth_getBlockTransactionCountByNumber(self, tag):
-        return self._dispatcher(action='eth_getBlockTransactionCountByNumber',
-                                tag=process_tag(tag))
+        Arguments:
+        tag -- The default block parameter, defaults to 'latest'.
+        boolean -- Set to True for more transaction data. Defaults to False.
+        """
+        return self._dispatch(action='eth_getBlockByNumber',
+                              tag=tag,
+                              boolean=str(bool(boolean)).lower())
+
+    def eth_getBlockTransactionCountByNumber(self, tag='latest'):
+        """Get the number of transactions in a block.
+
+        Argument:
+        tag -- The default block parameter, defaults to 'latest'.
+        """
+        return self._dispatch(action='eth_getBlockTransactionCountByNumber',
+                              tag=tag)
 
     def eth_getTransactionByHash(self, tx_hash):
-        if not is_hash(tx_hash):
-            raise EtherscanRPCError('invalid transaction hash: {}'.format(tx_hash))
-        return self._dispatcher(action='eth_getTransactionByHash',
-                                txhash=tx_hash)
+        """Returns details of a transaction.
 
-    def eth_getTransactionByBlockNumberAndIndex(self, tag, index):
-        return self._dispatcher(action='eth_getTransactionByBlockNumberAndIndex',
-                                tag=process_tag(tag),
-                                index=process_int(index, 'index'))
+        Argument:
+        tx_hash -- The hex encoded transaction hash.
+        """
+        return self._dispatch(action='eth_getTransactionByHash',
+                              txhash=tx_hash)
 
-    def eth_getTransactionCount(self, address, tag):
-        check_eth_address(address)
-        return self._dispatcher(action='eth_getTransactionCount',
-                                address=address,
-                                tag=process_tag(tag))
+    def eth_getTransactionByBlockNumberAndIndex(self, index, tag='latest'):
+        """Get's transaction details on a specific transaction in a block.
+
+        Arguments:
+        tag -- The default block parameter, defaults to 'latest'.
+        index -- The hex encoded transaction index.
+        """
+        return self._dispatch(action='eth_getTransactionByBlockNumberAndIndex',
+                              tag=tag,
+                              index=index)
+
+    def eth_getTransactionCount(self, address, tag='latest'):
+        """Get's the number of transactions made by an address.
+
+        Arguments:
+        address -- A hex encoded Ethereum address.
+        tag -- The default block parameter, defaults to 'latest'.
+        """
+        return self._dispatch(action='eth_getTransactionCount',
+                              address=address,
+                              tag=tag)
 
     def eth_sendRawTransaction(self, tx_hex):
-        if not is_hex(tx_hex):
-            raise EtherscanRPCError('invalid transaction hex: {}'.format(tx_hex))
-        return self._dispatcher(action='eth_sendRawTransaction',
-                                hex=tx_hex)
+        """Sends a raw transaction.
+
+        Argument:
+        tx_hex -- The hex encoded transaction data.
+        """
+        return self._dispatch(action='eth_sendRawTransaction',
+                              hex=tx_hex)
 
     def eth_getTransactionReceipt(self, tx_hash):
-        if not is_hash(tx_hash):
-            raise EtherscanRPCError('invalid transaction hash: {}'.format(tx_hash))
-        return self._dispatcher(action='eth_getTransactionReceipt',
-                                txhash=tx_hash)
+        """Get's the receipt for a transaction.
+
+        Argument:
+        tx_hash -- The hex encoded transaction hash.
+        """
+        return self._dispatch(action='eth_getTransactionReceipt',
+                              txhash=tx_hash)
 
     def eth_call(self, address, data):
-        check_eth_address(address)
+        """Returns the result of calling a smart contract.
 
-        if not is_hex(data):
-            raise EtherscanRPCError('`data` must be hex: {}'.format(data))
-        
-        return self._dispatcher(action='eth_call',
-                                to=address,
-                                data=data)
+        Arguments:
+        address -- The hex encoded address of the contract.
+        data -- Hex encoded ABI data for interacting with the contract.
+        """
+        return self._dispatch(action='eth_call',
+                              to=address,
+                              data=data)
 
-    def eth_getCode(self, address, tag):
-        check_eth_address(address)
-        return self._dispatcher(action='eth_getCode',
-                                address=address,
-                                tag=process_tag(tag))
+    def eth_getCode(self, address, tag='latest'):
+        """Get's the byte code of a contract.
 
-    def eth_getStorageAt(self, address, position, tag):
-        check_eth_address(address)
-        return self._dispatcher(action='eth_getStorageAt',
-                                address=address,
-                                position=process_int(position, 'position'),
-                                tag=process_tag(tag))
+        Arguments:
+        address -- The hex encoded contract address.
+        tag -- The default block parameter, defaults to 'latest'.
+        """
+        return self._dispatch(action='eth_getCode',
+                              address=address,
+                              tag=tag)
+
+    def eth_getStorageAt(self, address, position, tag='latest'):
+        """Get's a 32 byte value from the address's storage.
+
+        Arguments:
+        address -- The hex encoded address who's storage you want to inspect.
+        position -- A hex encoded location in the address's storage.
+        tag -- The default block parameter, defaults to 'latest'.
+        """
+        return self._dispatch(action='eth_getStorageAt',
+                              address=address,
+                              position=position,
+                              tag=tag)

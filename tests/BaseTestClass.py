@@ -1,6 +1,8 @@
 class BaseTest(object):
+
     def make_rpc_client(self):
-        raise NotImplementedError("make_rpc_client must be overridden in a subclass.")
+        err_msg = "make_rpc_client must be overridden in a subclass."
+        raise NotImplementedError(err_msg)
 
     def test_send_rpc(self):
         rpc_client = self.make_rpc_client()
@@ -19,7 +21,7 @@ class BaseTest(object):
         rpc_client.send('eth_coinbase', batch=True)
         rpc_client.send('eth_getBlockByNumber', 'earliest', True, batch=True)
         rpc_client.send('eth_sendTransaction',
-                        {'from':0xcafed00d,
+                        {'from': 0xcafed00d,
                          'to': 0xcafebabe,
                          'value': 1000},
                         batch=True)

@@ -1,8 +1,0 @@
-{
-  "name": "rpctools",
-  "version": "1.0dev1",
-  "description": "RPC client classed for Ethereum nodes.",
-  "author": "Chris Calderon",
-  "author_email": "pythonwiz@protonmail.com",
-  "packages": ["rpctools"]
-}
