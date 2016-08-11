@@ -1,13 +1,13 @@
-# PyRPCTools
+# rpctools
 RPC classes for interacting with Ethereum nodes.
 
-PyRPCTools includes three RPC client classes, `HTTPRPC`, `IPCRPC`, and `EtherscanRPC`. The first two are subclasses of the same base class (`JSONRPC`)
+The rpctools module includes three RPC client classes, `HTTPRPC`, `IPCRPC`, and `EtherscanRPC`. The first two are subclasses of the same base class (`JSONRPC`)
 and thus behave very similarly. The `EtherscanRPC` is superficially similar to the others but is limited to the supported methods provided by etherscan.io.
 
 The difference between the HTTPRPC and IPCRPC classes is that the former uses HTTP (via the requests module) to conduct the JSON RPC, while the latter uses the faster Unix domain socket interface. 
 
 
-## JSONRPC derived API
+## API
 
 * `rpc_client.send(method, *params, batch=False)`
 
