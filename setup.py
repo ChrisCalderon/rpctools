@@ -21,8 +21,10 @@ def split_requirements(links_requirements, req):
     links, requirements = links_requirements
     if is_http(req):
         i = req.find('#egg')
+        if i == -1:
+            raise SetupError('Missing \'#egg=\' in requirement link.')
         links.append(req[:i])
-        requirements.append(req[i+4:])
+        requirements.append(req[i+5:])
     else:
         requirements.append(req)
     return links, requirements
@@ -47,7 +49,7 @@ def read_metadata():
 
     with open(os.path.join(subdir, '__init__.py')) as m:
         first_line = next(m)
-        metadata['description'] = first_line.strip(). strip('"')
+        metadata['description'] = first_line.strip(). strip('\n "')
         for line in m:
             if len(relevant_keys) == 0:
                 break
@@ -58,7 +60,7 @@ def read_metadata():
                 continue
 
             metadatum_name = relevant_keys.pop(key)
-            metadata[metadatum_name] = line.split('=', 1)[1].strip('\n\'')
+            metadata[metadatum_name] = line.split('=', 1)[1].strip('\n\' ')
 
     if relevant_keys:
         print('FYI; You didn\'t put the following info in your __init__.py:')
